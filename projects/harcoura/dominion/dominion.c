@@ -721,7 +721,7 @@ void playSmithy(struct gameState *state, int currentPlayer, int handPos) {
 
     //+3 Cards
     for (i = 0; i <= 3; i++) {
-	drawCard(currentPlayer, state);
+        drawCard(currentPlayer, state);
     }
     //discard card from hand
     discardCard(handPos, currentPlayer, state, 0);
@@ -745,17 +745,17 @@ void playFeast(struct gameState *state, int currentPlayer, int choice1) {
     
     while( x == 1) {//Buy one card
 	if (supplyCount(choice1, state) <= 0){
-	    if (DEBUG){
+	    //if (DEBUG){
 	       printf("None of that card left, sorry!\n");
-	    }
+	    //}
 	    if (DEBUG){
 	        printf("Cards Left: %d\n", supplyCount(choice1, state));
 	    }
-	    x = 0;//No more buying cards
+	    x = 1;//No more buying cards
 	}
 	else if (state->coins < getCost(choice1)){
 	    printf("That card is too expensive!\n");
-	    x = 0;//No more buying cards
+	    x = 1;//No more buying cards
 	    
 	    if (DEBUG){
 	        printf("Coins: %d < %d\n", state->coins, getCost(choice1));
