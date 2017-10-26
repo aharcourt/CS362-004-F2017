@@ -48,7 +48,7 @@ int main() {
     int i, j;
     int totalFailures = 0;
     int newCards = 2, discarded = 1;
-    int deckSize = -1;
+    int deckSize, discardSize;
     int randCard;
     int handpos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
     int numPlayers = 2;
@@ -76,8 +76,20 @@ int main() {
         initializeGame(numPlayers, kingdomCards, gameSeed, &G);
         
         // Generate random deck size
-        deckSize = generateRand(10, MAX_DECK);
+        deckSize = generateRand(1, MAX_DECK / 2);
+        // Generate random discard size
+        discardSize = generateRand(1, MAX_DECK / 2);
        
+        // Fill discard with cards (for reshuffle if necessary)
+        for (j = 0; j < discardSize; j++) {
+            // Do not include treasure cards in discard (to test later if any were discarded)
+            randCard = generateRand(7, treasure_map);
+            G.discard[thisPlayer][j] = randCard;
+        }
+        
+        // Set discard size
+        G.discardCount[thisPlayer] = discardSize;
+        
         // Fill hand with random cards
         for (j = 0; j < deckSize; j++) {
             randCard = generateRand(0, treasure_map);

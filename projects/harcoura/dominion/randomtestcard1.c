@@ -25,7 +25,7 @@
 // Number of failures per test case
 int FAILURES = 0;
 // Number of test cases to run
-int TEST_CASES = 10000;
+int TEST_CASES = 1000;
 
 // Checks if two values are equal. If not, failure message is dislayed and failures are incremented
 void assertEqual(int actual, int expected, int testCase, const char *message){
@@ -47,10 +47,9 @@ int main() {
     int deckSize, discardSize;
     int randCard;
     int handpos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
-    int numPlayers = 2;
-    int thisPlayer = 0;
+    int numPlayers = 2, thisPlayer = 0, otherPlayer = 1;;
     int gameSeed;
-    int otherPlayer = 1;
+    int returnVal = -999;
 	struct gameState G, testG;
 	int kingdomCards[10] = {adventurer, embargo, village, minion, mine, cutpurse,
 			sea_hag, tribute, smithy, council_room};
@@ -98,7 +97,8 @@ int main() {
         memcpy(&testG, &G, sizeof(struct gameState));
         
         // Play card
-        cardEffect(smithy, choice1, choice2, choice3, &testG, handpos, &bonus);
+        returnVal = cardEffect(smithy, choice1, choice2, choice3, &testG, handpos, &bonus);
+        assertEqual(returnVal, 0, i + 1, "Return value of cardEffect was not 0.");
         
         // Check that the player 1 hand count is correct, depending on how many cards were available to draw.
         if (deckSize + discardSize >= 3) {
