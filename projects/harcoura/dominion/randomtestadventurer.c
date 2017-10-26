@@ -1,12 +1,12 @@
 /*
- * cardtest1.c
+ * randomtestadventurer.c
  */
 
 /*
  * Include the following lines in your makefile:
      *
-     * cardtest1: cardtest1.c dominion.o rngs.o
-     *      gcc -o cardtest1 -g  cardtest1.c dominion.o rngs.o $(CFLAGS)
+     * randomtestadventurer: randomtestadventurer.c dominion.o rngs.o
+     *      gcc -o randomtestadventurer -g  randomtestadventurer.c dominion.o rngs.o $(CFLAGS)
      */
 
 
@@ -16,173 +16,132 @@
 #include <stdio.h>
 #include "rngs.h"
 #include <stdlib.h>
-
+#include <limits.h>
+#include <time.h>
+#include <stdbool.h>
 #define TESTCARD "adventurer"
 
-int TOTAL_FAILURES = 0;
+// Number of failures per test case
+int FAILURES = 0;
+// Number of test cases to run
+int TEST_CASES = 1000;
 
-void assertEqual(int actual, int expected){
+// Checks if two values are equal. If not, failure message is dislayed and failures are incremented
+void assertEqual(int actual, int expected, int testCase, const char *message){
     if (expected != actual) {
-        printf(" >>> TEST FAILED <<<\n");
-        TOTAL_FAILURES++;
+        printf(" >> Test Failed: Test Case - %d, Details - %s << \n", testCase, message);
+        FAILURES++;
     }
 }
+
+// Generates a ranom int between two input values
+int generateRand(int min, int max){
+    return rand() % (max + 1 - min) + min;
+}
+
+// Returns true if card input is Copper, Silver, or Gold. Returns false otherwise
+bool isTreasure(int card){
+    return (card == copper || card == silver || card == gold);
+}
+
 int main() {
-    int i;
-    int newCards = 2;
-    int discarded = 1;
-    int copperVal = 1, silverVal = 2, goldVal = 3;
+    int i, j;
+    int totalFailures = 0;
+    int newCards = 2, discarded = 1;
+    int deckSize = -1;
+    int randCard;
     int handpos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
-    int seed = 11;
     int numPlayers = 2;
     int thisPlayer = 0;
+    int gameSeed;
+    int treasureCards = 0;
     int otherPlayer = 1;
 	struct gameState G, testG;
 	int kingdomCards[10] = {adventurer, embargo, village, minion, mine, cutpurse,
 			sea_hag, tribute, smithy, council_room};
             
+    // Seed random number generator with static value (for replicability)       
+    srand(10);
 
-	// Initialize a game
-	initializeGame(numPlayers, kingdomCards, seed, &G);
+    printf("\n----------------- Testing Card: %s ----------------\n", TESTCARD);
     
-    // Copy the game state to a test game
-	memcpy(&testG, &G, sizeof(struct gameState));
+    for (i = 0; i < TEST_CASES; i++) {
+        FAILURES = 0;
+        treasureCards = 0;
+        
+        // Get random game seed
+        gameSeed = generateRand(0, INT_MAX);
+ 
+        // Initialize a game
+        initializeGame(numPlayers, kingdomCards, gameSeed, &G);
+        
+        // Generate random deck size
+        deckSize = generateRand(10, MAX_DECK);
+       
+        // Fill hand with random cards
+        for (j = 0; j < deckSize; j++) {
+            randCard = generateRand(0, treasure_map);
+            G.deck[thisPlayer][j] = randCard;
+            
+            // Count number of treasure cards added to deck
+            if (isTreasure(randCard)){
+                treasureCards++;
+            }
+        }
+        
+        // Set deck size and place adventurer card in hand
+        G.deckCount[thisPlayer] = deckSize;
+        G.hand[thisPlayer][0] = adventurer;
+        
+        // Copy game to test state
+        memcpy(&testG, &G, sizeof(struct gameState));
+        
+        // Play card
+        cardEffect(adventurer, choice1, choice2, choice3, &testG, handpos, &bonus);
+        
+        // Check that the player 1 hand count is correct, depending on how many treasure cards are available to draw from deck
+        if (treasureCards >= 2) {
+            assertEqual(testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded, i + 1, "Player 1 hand count is incorrect.");
+        }
+        else if (treasureCards >= 1) {
+            assertEqual(testG.handCount[thisPlayer], G.handCount[thisPlayer] + (newCards - 1) - discarded, i + 1, "Player 1 hand count is incorrect.");
+        }
+        else{
+            assertEqual(testG.handCount[thisPlayer], G.handCount[thisPlayer] - discarded, i + 1, "Player 1 hand count is incorrect.");
+        }
+        
+        // Assert that last two drawn cards are treasure cards (if they were available to draw)
+        if (treasureCards >= 1) {
+            assertEqual(isTreasure(testG.hand[thisPlayer][testG.handCount[thisPlayer]-1]), true, i + 1, "Last card drawn was not a treasure card.");
+        }
+        if (treasureCards >= 2) {
+            assertEqual(isTreasure(testG.hand[thisPlayer][testG.handCount[thisPlayer]-2]), true, i + 1, "Second to last card drawn was not a treasure card.");
+        }
+           
+        // Assert that no treasure cards were discarded
+        for (j = 0; j < testG.discardCount[thisPlayer]; j++) {
+            assertEqual(isTreasure(testG.discard[thisPlayer][j]), false, i + 1, "A treasure card was discarded instead of kept in hand.");
+        }
+      
+        // Assert that no state changes occurred for other players
+        assertEqual(testG.handCount[otherPlayer], G.handCount[otherPlayer], i + 1, "Player 2 hand count is incorrect.");
+        assertEqual(testG.deckCount[otherPlayer], G.deckCount[otherPlayer], i + 1, "Player 2 deck count is incorrect.");
+        assertEqual(testG.discardCount[otherPlayer], G.discardCount[otherPlayer], i + 1, "Player 2 discard count is incorrect.");
     
-	printf("\n----------------- Testing Card: %s ----------------\n", TESTCARD);
-
-	// ----------- TEST SET 1: +2 cards --------------
-	printf("\nTEST SET 1: +2 CARDS\n");
-    
-	cardEffect(adventurer, choice1, choice2, choice3, &testG, handpos, &bonus);
-
-	printf("Hand count (Player 1) = %d, Expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
-    assertEqual(testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
-    
-    printf("Deck count (Player 1) = %d, Expected = %d\n", testG.deckCount[thisPlayer], G.deckCount[thisPlayer] - newCards);
-    assertEqual(testG.deckCount[thisPlayer], G.deckCount[thisPlayer] - newCards);
-    
-    updateCoins(thisPlayer, &testG, bonus);
-    
-	printf("Coins (Player 1) = %d, Expected = %d\n", testG.coins, G.coins + copperVal * 2);
-	assertEqual(testG.coins, G.coins + copperVal * 2);
-    
-    // ----------- TEST SET 2: Ensure only treasure cards are kept --------------
-	printf("\nTEST SET 2: ENSURE ONLY TREASURE CARDS ARE KEPT\n");
-    
-    // Initialize a game
-	initializeGame(numPlayers, kingdomCards, seed, &G);
-   
-    // Set player decks 
-    G.deckCount[thisPlayer] = 0;
-    
-    for (i = 0; i < treasure_map; i++) {
-      G.deck[thisPlayer][i] = i;
-      G.deckCount[thisPlayer]++;
+        // Test that all card piles remained the same.
+        for (j = 0; j <= treasure_map; j++) {  
+            assertEqual(testG.supplyCount[j], G.supplyCount[j], i + 1, "A card pile was altered.");      
+        }  
+        
+        // If this test had any failures, add it to the total failure log
+        if (FAILURES) {
+            totalFailures++;
+        }    
     }
-    
-    //Set deck
-    G.deck[thisPlayer][copper] = curse;
-    G.deck[thisPlayer][silver] = estate;
-    G.deck[thisPlayer][gold] = duchy;
-    
-    G.deck[thisPlayer][curse] = copper;
-    G.deck[thisPlayer][estate] = silver;
-    G.deck[thisPlayer][duchy] = gold;
-    
-    // Copy the game state to a test game
-	memcpy(&testG, &G, sizeof(struct gameState));
-    
-    cardEffect(adventurer, choice1, choice2, choice3, &testG, handpos, &bonus);
-    
-    printf("Hand count (Player 1) = %d, Expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
-    assertEqual(testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
-    
-    printf("Deck count (Player 1) = %d, Expected = %d\n", testG.deckCount[thisPlayer], 1);
-    assertEqual(testG.deckCount[thisPlayer], 1);
-    
-    updateCoins(thisPlayer, &testG, bonus);
-    
-	printf("Coins (Player 1) = %d, Expected = %d\n", testG.coins, G.coins + silverVal + goldVal);
-	assertEqual(testG.coins, G.coins + silverVal + goldVal);
-    
-    // ----------- TEST SET 3: Ensure all treasure card types are kept --------------
-	printf("\nTEST SET 3: ENSURE ALL TREASURE CARD TYPES ARE KEPT\n");
-    
-    // Initialize a game
-	initializeGame(numPlayers, kingdomCards, seed, &G);
-   
-    // Set player decks 
-    G.deckCount[thisPlayer] = 0;
-    
-    for (i = 0; i < treasure_map; i++) {
-      G.deck[thisPlayer][i] = i;
-      G.deckCount[thisPlayer]++;
-    }
-    
-    //Set deck
-    G.deck[thisPlayer][copper] = curse;
-    G.deck[thisPlayer][silver] = estate;
-    G.deck[thisPlayer][gold] = duchy;
-    
-    G.deck[thisPlayer][curse] = gold;
-    G.deck[thisPlayer][estate] = silver;
-    G.deck[thisPlayer][duchy] = copper;
-    
-    // Copy the game state to a test game
-	memcpy(&testG, &G, sizeof(struct gameState));
-    
-    cardEffect(adventurer, choice1, choice2, choice3, &testG, handpos, &bonus);
-    
-    printf("Hand count (Player 1) = %d, Expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
-    assertEqual(testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
-    
-    printf("Deck count (Player 1) = %d, Expected = %d\n", testG.deckCount[thisPlayer], 1);
-    assertEqual(testG.deckCount[thisPlayer], 1);
-    
-    updateCoins(thisPlayer, &testG, bonus);
-    
-	printf("Coins (Player 1) = %d, Expected = %d\n", testG.coins, G.coins + silverVal + copperVal);
-	assertEqual(testG.coins, G.coins + silverVal + copperVal);
-    
-    
-    // ----------- TEST SET 4: No state changes for other player --------------
-	printf("\nTEST SET 4: NO STATE CHANGES FOR OTHER PLAYER\n");
 
-	printf("Hand count (Player 2) = %d, Expected = %d\n", testG.handCount[otherPlayer], G.handCount[otherPlayer]);
-    assertEqual(testG.handCount[otherPlayer], G.handCount[otherPlayer]);
-    
-    printf("Deck count (Player 2) = %d, Expected = %d\n", testG.deckCount[otherPlayer], G.deckCount[otherPlayer]);
-    assertEqual(testG.deckCount[otherPlayer], G.deckCount[otherPlayer]);
-
-    printf("Discard count (Player 2) = %d, Expected = %d\n", testG.discardCount[otherPlayer], G.discardCount[otherPlayer]);
-    assertEqual(testG.discardCount[otherPlayer], G.discardCount[otherPlayer]);
-
-	// ----------- TEST SET 5: No state changes in card piles --------------
-	printf("\nTEST SET 5: NO STATE CHANGES IN CARD PILES\n");
-
-    // Test that Treasure card states did not change.
-    printf("Treasure cards: Copper = %d, Silver = %d, Gold = %d\nExpected: Copper = %d, Silver = %d, Gold = %d\n", 
-        testG.supplyCount[copper], testG.supplyCount[silver], testG.supplyCount[gold], G.supplyCount[copper], G.supplyCount[silver], G.supplyCount[gold]);
-    assertEqual(testG.supplyCount[copper], G.supplyCount[copper]);
-    assertEqual(testG.supplyCount[silver], G.supplyCount[silver]);
-    assertEqual(testG.supplyCount[gold], G.supplyCount[gold]);
-    
-    // Test that Victory card states did not change.
-    printf("Victory cards: Estate = %d, Duchy = %d, Province = %d\nExpected: Estate = %d, Duchy = %d, Province = %d\n", 
-        testG.supplyCount[estate], testG.supplyCount[duchy], testG.supplyCount[province], G.supplyCount[estate], G.supplyCount[duchy], G.supplyCount[province]);
-    assertEqual(testG.supplyCount[estate], G.supplyCount[estate]);
-    assertEqual(testG.supplyCount[duchy], G.supplyCount[duchy]);
-    assertEqual(testG.supplyCount[province], G.supplyCount[province]);
-    
-    
-    // Test that Kingdom card states did not change. 
-    for (i = 0; i < 10; i++) {  
-        printf("Kingdom card %d = %d, Expected = %d\n", i + 1, testG.supplyCount[(kingdomCards[i])], G.supplyCount[kingdomCards[i]]);
-        assertEqual(testG.supplyCount[kingdomCards[i]], G.supplyCount[kingdomCards[i]]);      
-    }  
-    
-    if (TOTAL_FAILURES) {
-        printf("\n >>>>> TESTING FAILED: %s testing complete with %d failures. <<<<<\n\n", TESTCARD, TOTAL_FAILURES);
+    // Print final random test results
+    if (totalFailures) {
+        printf("\n >>>>> TESTING FAILED: %s testing complete with %d failures out of %d test cases. <<<<<\n\n", TESTCARD, totalFailures, TEST_CASES);
     }
     else {
         printf("\n >>>>> SUCCESS: %s testing complete. <<<<<\n\n", TESTCARD);
