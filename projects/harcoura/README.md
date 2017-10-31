@@ -4,9 +4,9 @@ This is my assignment-4 submission.
 
 Instructions:
 
-make randomtestadventurer <br />
-make randomtestcard1 <br />
-make randomtestcard2 <br />
+> make randomtestadventurer <br />
+> make randomtestcard1 <br />
+> make randomtestcard2 <br />
 
 Results will be in:
 
