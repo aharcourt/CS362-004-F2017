@@ -51,11 +51,9 @@ int main() {
     int deckSize, discardSize;
     int randCard;
     int handpos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
-    int numPlayers = 2;
-    int thisPlayer = 0;
+    int numPlayers = 2, thisPlayer = 0, otherPlayer = 1;
     int gameSeed;
     int treasureCards = 0;
-    int otherPlayer = 1;
 	struct gameState G, testG;
 	int kingdomCards[10] = {adventurer, embargo, village, minion, mine, cutpurse,
 			sea_hag, tribute, smithy, council_room};
