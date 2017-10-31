@@ -4,11 +4,12 @@ This is my assignment-4 submission.
 
 Instructions:
 
-make randomtestadventurer
-make randomtestcard1
-make randomtestcard2
+make randomtestadventurer <br />
+make randomtestcard1 <br />
+make randomtestcard2 <br />
 
 Results will be in:
-randomtestadventurer.out
-randomtestcard1.out
+
+randomtestadventurer.out <br />
+randomtestcard1.out <br />
 randomtestcard2.out
