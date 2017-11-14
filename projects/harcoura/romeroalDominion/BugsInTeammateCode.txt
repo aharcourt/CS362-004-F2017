@@ -1,0 +1,113 @@
+Bug 1 in Teammate's Code
+==============================
+
+Title: Smithy Card Draws Too Few Cards
+
+Class: Serious Error
+
+Date: 11/13/2017          
+Reported By: Adeline Harcourt 
+Email: harcoura@oregonstate.edu
+
+
+Product: dominion code          Version: N/A
+Platform: Linux                 Version: 3.10.0-514.26.2.el7.x86_64
+Browser: N/A                    Version: N/A
+URL: N/A
+
+Is it reproducible: Yes
+
+Description
+===========
+The Smithy Card function draws two cards instead of three.
+
+
+Steps to Produce/Reproduce
+--------------------------
+Call the cardEffect() and pass in the Smithy card option. The
+error is reproducable no matter what other parameters are passed 
+in.
+
+
+Expected Results
+----------------
+Three cards are drawn.
+
+
+Actual Results
+--------------
+Two cards are drawn.
+
+
+Workarounds
+-----------
+None.
+
+
+Attachments
+-----------
+None.
+
+
+Other Information
+-----------------
+None.
+
+
+
+Bug 2 in Teammate's Code
+==============================
+
+Title: Adventurer Card Discard Error
+
+Class: Serious Error
+
+Date: 11/13/2017          
+Reported By: Adeline Harcourt 
+Email: harcoura@oregonstate.edu
+
+
+Product: dominion code          Version: N/A
+Platform: Linux                 Version: 3.10.0-514.26.2.el7.x86_64
+Browser: N/A                    Version: N/A
+URL: N/A
+
+Is it reproducible: Yes
+
+Description
+===========
+The Adventurer Card function does not discard the temporary hand
+at the end of the turn. The while statement conditional should be:
+z - 1 >= 0, instead of z - 1 == 0.
+
+
+Steps to Produce/Reproduce
+--------------------------
+Call the cardEffect() and pass in the Adventurer card option. The
+error is reproducable no matter what other parameters are passed 
+in.
+
+
+Expected Results
+----------------
+Hand count should be 6 after playing the card.
+
+
+Actual Results
+--------------
+Hand count is greater than 6.
+
+
+Workarounds
+-----------
+None.
+
+
+Attachments
+-----------
+None.
+
+
+Other Information
+-----------------
+None.
