@@ -35,31 +35,210 @@ public class UrlValidatorTest extends TestCase {
    public UrlValidatorTest(String testName) {
       super(testName);
    }
-
-   
    
    public void testManualTest()
    {
 	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
-	   System.out.println(urlVal.isValid("http://www.amazon.com"));
-	   
-	   
+	   assert(urlVal.isValid("http://www.amazon.com"));
+	   assert(!urlVal.isValid("www.amazon.com"));
    }
    
    
-   public void testYourFirstPartition()
-   {
+   public void testPartitionScheme() {  
+	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
+	   int numTests, failedTests = 0;
+	   boolean testResult;
+	   String testURL;
 	   
+	   // Create "Result Pairs" for all schemes that we will be testing
+	   ResultPair[] schemes = {
+			   new ResultPair("http://", true),
+			   new ResultPair("Ftp://", true),
+			   new ResultPair("1http://", false),
+			   new ResultPair("httP0+-.://", true),
+			   new ResultPair("http_$!://", false),
+			   new ResultPair("http", false),
+			   new ResultPair("", true)
+	   };
+	   numTests = schemes.length;
+	   
+	   // Display Testing Header
+	   System.out.println("\n>>>>>>>>>>>> Partition Test: URL Scheme <<<<<<<<<<<<\n");
+	  
+	   // Check URLs against expected values
+	   for(int i = 0; i < numTests; i++){
+		   testURL = schemes[i].item + "www.google.com";
+		   testResult = urlVal.isValid(testURL);
+		   System.out.print("Testing URL " + testURL + " ...");
+		   if (testResult != schemes[i].valid) {
+			   System.out.print(" >>> FAILED <<<");
+			   failedTests++;
+		   }
+		   System.out.print("\n");
+		   
+	   }
+	   
+	   //Print Results
+	   System.out.println("\n>>>>>>>> Testing Finished with " + failedTests + "/" + numTests + " Failures <<<<<<<<");
    }
    
-   public void testYourSecondPartition(){
+   public void testPartitionAuthority() {  
+	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
+	   int numTests, failedTests = 0;
+	   boolean testResult;
+	   String testURL;
 	   
+	   // Create "Result Pairs" for all authorities that we will be testing
+	   ResultPair[] authorities = {
+			   new ResultPair("oregonstate.edu", true),
+			   new ResultPair("www.10best.com", true),
+			   new ResultPair("www.google.com/webhp", true),
+			   new ResultPair("256.255.255.255", false),
+			   new ResultPair(".0.0.0.0.", false),
+			   new ResultPair("255.255.255.255", true),
+			   new ResultPair("0.0.0.0", true),
+			   new ResultPair("", false)
+	   };
+	   numTests = authorities.length;
+	   
+	   // Display Testing Header
+	   
+	   System.out.println("\n>>>>>>>>>> Partition Test: URL Authority <<<<<<<<<<<\n");
+	  
+	   // Check URLs against expected values
+	   for(int i = 0; i < numTests; i++){
+		   testURL = "http://" + authorities[i].item;
+		   testResult = urlVal.isValid(testURL);
+		   System.out.print("Testing URL " + testURL + " ...");
+		   if (testResult != authorities[i].valid) {
+			   System.out.print(" >>> FAILED <<<");
+			   failedTests++;
+		   }
+		   System.out.print("\n");
+		   
+	   }
+	   
+	   //Print Results
+	   System.out.println("\n>>>>>>>> Testing Finished with " + failedTests + "/" + numTests + " Failures <<<<<<<<");
    }
    
+   public void testPartitionPort() {  
+	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
+	   int numTests, failedTests = 0;
+	   boolean testResult;
+	   String testURL;
+	   
+	   // Create "Result Pairs" for all ports that we will be testing
+	   ResultPair[] ports = {
+			   new ResultPair("", true),
+			   new ResultPair(":8080", true),
+			   new ResultPair(":0", true),
+			   new ResultPair(":65535", true),
+			   new ResultPair(":-1.", false),
+			   new ResultPair("65536", false),
+			   new ResultPair("8080", false),
+			   new ResultPair("abcd", false)
+	   };
+	   numTests = ports.length;
+	   
+	   // Display Testing Header
+	   
+	   System.out.println("\n>>>>>>>>>>>>> Partition Test: URL Port <<<<<<<<<<<<<\n");
+	  
+	   // Check URLs against expected values
+	   for(int i = 0; i < numTests; i++){
+		   testURL = "http://www.google.com" + ports[i].item;
+		   testResult = urlVal.isValid(testURL);
+		   System.out.print("Testing URL " + testURL + " ...");
+		   if (testResult != ports[i].valid) {
+			   System.out.print(" >>> FAILED <<<");
+			   failedTests++;
+		   }
+		   System.out.print("\n");
+		   
+	   }
+	   
+	   //Print Results
+	   System.out.println("\n>>>>>>>> Testing Finished with " + failedTests + "/" + numTests + " Failures <<<<<<<<");
+   }
+   
+   public void testPartitionPath() {  
+	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
+	   int numTests, failedTests = 0;
+	   boolean testResult;
+	   String testURL;
+	   
+	   // Create "Result Pairs" for all paths that we will be testing
+	   ResultPair[] paths = {
+			   new ResultPair("", true),
+			   new ResultPair("/path/path", true),
+			   new ResultPair("Path/path", false),
+			   new ResultPair("/path?/path", false),
+			   new ResultPair("/path01/&path!", true)
+	   };
+	   numTests = paths.length;
+	   
+	   // Display Testing Header
+	   
+	   System.out.println("\n>>>>>>>>>>>>> Partition Test: URL Path <<<<<<<<<<<<<\n");
+	  
+	   // Check URLs against expected values
+	   for(int i = 0; i < numTests; i++){
+		   testURL = "http://www.google.com" + paths[i].item;
+		   testResult = urlVal.isValid(testURL);
+		   System.out.print("Testing URL " + testURL + " ...");
+		   if (testResult != paths[i].valid) {
+			   System.out.print(" >>> FAILED <<<");
+			   failedTests++;
+		   }
+		   System.out.print("\n");
+		   
+	   }
+	   
+	   //Print Results
+	   System.out.println("\n>>>>>>>> Testing Finished with " + failedTests + "/" + numTests + " Failures <<<<<<<<");
+   }
+   
+   public void testPartitionQuery() {  
+	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
+	   int numTests, failedTests = 0;
+	   boolean testResult;
+	   String testURL;
+	   
+	   // Create "Result Pairs" for all queries that we will be testing
+	   ResultPair[] queries = {
+			   new ResultPair("", true),
+			   new ResultPair("?key=value", true),
+			   new ResultPair("Key=value", false),
+			   new ResultPair("?KeyValue", false),
+			   new ResultPair("?key=value&key2=value2", true)
+	   };
+	   numTests = queries.length;
+	   
+	   // Display Testing Header
+	   
+	   System.out.println("\n>>>>>>>>>>>>>> Partition Test: URL Query <<<<<<<<<<<<<\n");
+	  
+	   // Check URLs against expected values
+	   for(int i = 0; i < numTests; i++){
+		   testURL = "http://www.google.com" + queries[i].item;
+		   testResult = urlVal.isValid(testURL);
+		   System.out.print("Testing URL " + testURL + " ...");
+		   if (testResult != queries[i].valid) {
+			   System.out.print(" >>> FAILED <<<");
+			   failedTests++;
+		   }
+		   System.out.print("\n");
+		   
+	   }
+	   
+	   //Print Results
+	   System.out.println("\n>>>>>>>> Testing Finished with " + failedTests + "/" + numTests + " Failures <<<<<<<<");
+   }
    
    public void testIsValid()
    {
-	   for(int i = 0;i<10000;i++)
+	   for(int i = 0; i <10000; i++)
 	   {
 		   
 	   }
