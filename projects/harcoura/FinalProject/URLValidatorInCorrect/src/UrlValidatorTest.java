@@ -38,9 +38,67 @@ public class UrlValidatorTest extends TestCase {
    
    public void testManualTest()
    {
+	   System.out.println("Begining Manual Test: ");
+	   
+	   String[] testURLs = {
+			   ("http://www.facebook.com"), 
+			   ("www.facebook.com"), 
+			   ("http:/256.256.256.256:-1/..?action=view"), 
+			   ("http://125.125.125.125"), 
+			   ("http://www.google.com:80/test1?action=view"),
+			   ("http://www.aaa.com"),
+			   ("http://0.0.0.0:80/test1?action=view"),
+			   ("aaa"),
+			   ("777"),
+			   (""),
+			   ("chrome.extension://google.com"),
+			   ("http://www.someuniversity.edu:80/path?query_string"),
+			   ("http://www.someuniversity:80/path"),
+			   ("http://www.someuniversity:80/"),
+			   ("http://www.someuniversity:80"),
+			   ("httpwww.amazon.com"),
+			   ("http://www.amazon"),
+			   ("http://www.loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong.com"),
+			   ("htp://www.facebook.com\""),
+			   ("http://0.0.0.0:0")	   
+	   };
+	   
+	   String[] expectedResults = {
+			   ("true"), 
+			   ("true"), 
+			   ("false"), 
+			   ("true"),
+			   ("true"),
+			   ("true"),
+			   ("true"),
+			   ("false"),
+			   ("false"),
+			   ("false"),
+			   ("true"),
+			   ("true"),
+			   ("true"),
+			   ("true"),
+			   ("true"),
+			   ("false"),
+			   ("false"),
+			   ("false"),
+			   ("false"),
+			   ("true")
+	   };
+	   
+	   int numOfTests = testURLs.length;
+	   
 	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
-	   assert(urlVal.isValid("http://www.amazon.com"));
-	   assert(!urlVal.isValid("www.amazon.com"));
+	   
+	   for(int i = 0; i < numOfTests; i++){
+		   System.out.println("Test URL: " + testURLs[i]);
+		   System.out.println("Expected Result: " + expectedResults[i]+ "  Actual Result: " + urlVal.isValid(testURLs[i]));
+	   }
+	   
+	   
+	   //System.out.println(urlVal.isValid("http://0.0.0.0:80/test1?action=view"));
+	   
+	   
    }
    
    
